@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Alpha Avocat Login</title>
+</head>
+
+<body>
+
+<h1>ALPHA AVOCAT</h1>
+<h2>Ingreso al sistema</h2>
+
+<input id="email" placeholder="correo">
+<br><br>
+
+<input id="password" type="password" placeholder="contraseña">
+<br><br>
+
+<button onclick="login()">Ingresar</button>
+
+<script type="module">
+
+import { supabase } from "./app.js"
+
+async function login(){
+
+let email = document.getElementById("email").value
+let password = document.getElementById("password").value
+
+const {data,error} = await supabase.auth.signInWithPassword({
+email: email,
+password: password
+})
+
+if(error){
+
+alert("Error de acceso")
+
+}else{
+
+window.location.href="panel.html"
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>
