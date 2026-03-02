@@ -86,7 +86,7 @@
     async function loadList(){
       const { data, error } = await supabase
         .from("clients")
-        .select("id,full_name,rut,is_legal_entity,phone,email")
+        .select("id,name,full_name,rut,is_legal_entity,phone,email")
         .order("created_at",{ascending:false})
         .limit(50);
 
@@ -95,7 +95,7 @@
 
       list.innerHTML = data.map(c => `
         <div class="row">
-          <div><b>${esc(c.full_name)}</b> <span class="muted">${c.is_legal_entity ? "(PJ)" : "(PN)"}</span></div>
+          <div><b>${esc(c.full_name || c.name || "")}</b> <span class="muted">${c.is_legal_entity ? "(PJ)" : "(PN)"}</span></div>
           <div class="muted">${c.rut ? esc(c.rut)+" • " : ""}${c.phone ? esc(c.phone)+" • " : ""}${c.email ? esc(c.email) : ""}</div>
         </div>
       `).join("");
