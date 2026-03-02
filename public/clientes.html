@@ -101,17 +101,17 @@
       `).join("");
     }
 
-    document.getElementById("btnCreate").addEventListener("click", async () => {
-      msg.textContent = "";
+    const nm = document.getElementById("full_name").value.trim();
 
-      const payload = {
-        full_name: document.getElementById("full_name").value.trim(),
-        rut: document.getElementById("rut").value.trim() || null,
-        address: document.getElementById("address").value.trim() || null,
-        phone: document.getElementById("phone").value.trim() || null,
-        email: document.getElementById("email").value.trim() || null,
-        is_legal_entity: document.getElementById("is_legal_entity").value === "true"
-      };
+const payload = {
+  name: nm,
+  full_name: nm,
+  rut: document.getElementById("rut").value.trim() || null,
+  address: document.getElementById("address").value.trim() || null,
+  phone: document.getElementById("phone").value.trim() || null,
+  email: document.getElementById("email").value.trim() || null,
+  is_legal_entity: document.getElementById("is_legal_entity").value === "true"
+};
 
       if(!payload.full_name){ msg.textContent="Falta nombre."; return; }
 
