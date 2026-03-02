@@ -226,60 +226,66 @@ const list=document.getElementById("list")
 const msg=document.getElementById("msg")
 
 async function loadClients(){
+  const { data, error } = await supabase
+    .from("clients")
+    .select("id,full_name")
+    .order("created_at", { ascending: false });
 
-const {data,error}=await supabase
-.from("clients")
-.select("id,full_name")
+  if (error) {
+    msg.textContent = "Error cargando clientes: " + error.message;
+    clientSelect.innerHTML = `<option value="">(sin clientes)</option>`;
+    return;
+  }
 
-if(error)return
+  if (!data || data.length === 0) {
+    clientSelect.innerHTML = `<option value="">(sin clientes)</option>`;
+    return;
+  }
 
-clientSelect.innerHTML=data.map(c=>`
-
-<option value="${c.id}">${c.full_name}</option>
-
-`).join("")
-
+  clientSelect.innerHTML = data.map(c =>
+    `<option value="${c.id}">${c.full_name}</option>`
+  ).join("");
 }
 
 async function loadCases(){
+  // 1) trae causas
+  const { data: casesData, error: casesErr } = await supabase
+    .from("cases")
+    .select("id,client_id,rol,court,matter,fee_total,created_at")
+    .order("created_at", { ascending: false });
 
-const {data,error}=await supabase
-.from("cases")
-.select("id,rol,court,matter,fee_total,clients(full_name)")
-.order("created_at",{ascending:false})
+  if (casesErr) {
+    list.innerHTML = "Error cargando causas: " + casesErr.message;
+    return;
+  }
 
-if(error){
+  // 2) trae clientes para mapear nombres
+  const { data: clientsData, error: clientsErr } = await supabase
+    .from("clients")
+    .select("id,full_name");
 
-list.innerHTML="Error cargando causas"
+  const nameById = new Map();
+  if (!clientsErr && clientsData) {
+    clientsData.forEach(c => nameById.set(c.id, c.full_name));
+  }
 
-return
+  if (!casesData || casesData.length === 0) {
+    list.innerHTML = "<div class='muted'>Sin causas aún</div>";
+    return;
+  }
 
+  list.innerHTML = casesData.map(c => `
+    <div class="row">
+      <div><b>${c.rol || "(sin rol)"}</b> — ${escapeHtml(nameById.get(c.client_id) || "")}</div>
+      <div class="muted">${escapeHtml(c.court || "")} • ${escapeHtml(c.matter || "")}</div>
+      <div class="muted">Honorarios: $${Number(c.fee_total || 0).toLocaleString("es-CL")}</div>
+    </div>
+  `).join("");
 }
 
-if(!data.length){
-
-list.innerHTML="<div class='muted'>Sin causas aún</div>"
-
-return
-
+function escapeHtml(s){
+  return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
 }
-
-list.innerHTML=data.map(c=>`
-
-<div class="row">
-
-<div><b>${c.rol||"(sin rol)"}</b> — ${c.clients?.full_name||""}</div>
-
-<div class="muted">${c.court||""} • ${c.matter||""}</div>
-
-<div class="muted">Honorarios: $${c.fee_total||0}</div>
-
-</div>
-
-`).join("")
-
-}
-
 document.getElementById("btnCreate").addEventListener("click",async()=>{
 
 msg.textContent=""
