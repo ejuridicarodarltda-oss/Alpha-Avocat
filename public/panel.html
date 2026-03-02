@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ALPHA AVOCAT – Panel</title>
+</head>
+<body>
+  <h1>ALPHA AVOCAT</h1>
+  <h2>Panel principal</h2>
+
+  <p id="who">Cargando sesión…</p>
+
+  <hr>
+
+  <h3>Accesos (MVP)</h3>
+  <ul>
+    <li>Agenda (próximo)</li>
+    <li>Causas (próximo)</li>
+    <li>Clientes (próximo)</li>
+    <li>Jurisprudencia / Argumentos / Doctrina (próximo)</li>
+  </ul>
+
+  <button id="btnLogout">Cerrar sesión</button>
+
+  <script type="module">
+    import { supabase } from "./app.js";
+
+    const who = document.getElementById("who");
+
+    // Si no hay sesión, volver al login
+    const { data } = await supabase.auth.getSession();
+    const session = data.session;
+
+    if (!session) {
+      window.location.href = "login.html";
+    } else {
+      who.textContent = "Sesión iniciada como: " + (session.user?.email || "(sin email)");
+    }
+
+    document.getElementById("btnLogout").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    });
+  </script>
+</body>
+</html>
