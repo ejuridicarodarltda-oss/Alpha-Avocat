@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALPHA AVOCAT – Causas</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:#f4f6f8;
+color:#0c1b2a;
+}
+
+header{
+background:#0c1b2a;
+color:white;
+padding:14px 18px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+a{
+color:white;
+text-decoration:none;
+margin-left:12px;
+}
+
+main{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+border-radius:10px;
+padding:18px;
+margin-bottom:16px;
+border:1px solid #e7eaee;
+}
+
+label{
+display:block;
+margin-top:10px;
+font-size:13px;
+color:#5b6672;
+}
+
+input,select,textarea{
+width:100%;
+padding:10px;
+border:1px solid #e7eaee;
+border-radius:8px;
+margin-top:6px;
+}
+
+button{
+background:#0c1b2a;
+color:white;
+border:none;
+padding:10px 14px;
+border-radius:8px;
+cursor:pointer;
+margin-top:12px;
+}
+
+.row{
+border-top:1px solid #e7eaee;
+padding:12px 0;
+}
+
+.row:first-child{
+border-top:none;
+}
+
+.muted{
+color:#5b6672;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:16px;
+}
+
+@media(max-width:900px){
+.grid{grid-template-columns:1fr;}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div>
+<b>ALPHA AVOCAT</b>
+<span class="muted" style="color:#cdd7e0">Causas</span>
+</div>
+
+<div>
+<a href="/panel.html">Panel</a>
+<a href="/clientes.html">Clientes</a>
+<a href="/agenda.html">Agenda</a>
+<a href="/login.html" id="logoutLink">Salir</a>
+</div>
+
+</header>
+
+<main>
+
+<div class="grid">
+
+<div class="card">
+
+<h2>Nueva causa</h2>
+
+<label>Cliente</label>
+<select id="client"></select>
+
+<label>Tribunal</label>
+<input id="court" placeholder="Ej: 2° Juzgado Civil de La Serena">
+
+<label>Rol / RIT</label>
+<input id="rol" placeholder="C-1234-2025">
+
+<label>Materia</label>
+<select id="matter">
+<option value="civil">Civil</option>
+<option value="familia">Familia</option>
+<option value="laboral">Laboral</option>
+<option value="penal">Penal</option>
+<option value="policia_local">Policía Local</option>
+<option value="otro">Otro</option>
+</select>
+
+<label>Abogado responsable</label>
+<input id="lawyer" placeholder="Nombre abogado">
+
+<label>Honorarios totales</label>
+<input id="fee_total" type="number">
+
+<label>Tipo de honorario</label>
+<select id="fee_type">
+<option value="fijo">Fijo</option>
+<option value="etapas">Por etapas</option>
+<option value="cuota_litis">Cuota litis</option>
+<option value="mixto">Mixto</option>
+</select>
+
+<label>Forma de pago</label>
+<select id="payment_mode">
+<option value="contado">Contado</option>
+<option value="cuotas">Cuotas</option>
+<option value="cuota_litis">Cuota litis</option>
+<option value="mixto">Mixto</option>
+</select>
+
+<label>% PPM</label>
+<input id="ppm_percent" type="number" value="13">
+
+<label>Retención PPM</label>
+<select id="ppm_withheld_by">
+<option value="receptor">Retiene cliente (empresa)</option>
+<option value="emisor">Retiene abogado</option>
+<option value="no_aplica">No aplica</option>
+</select>
+
+<label>Notas</label>
+<textarea id="notes"></textarea>
+
+<button id="btnCreate">Crear causa</button>
+
+<p id="msg" class="muted"></p>
+
+</div>
+
+<div class="card">
+
+<h2>Causas</h2>
+
+<div id="list">
+
+<span class="muted">Cargando…</span>
+
+</div>
+
+</div>
+
+</div>
+
+</main>
+
+<script type="module">
+
+import { supabase } from "./app.js"
+
+const { data } = await supabase.auth.getSession()
+
+if(!data.session){
+
+window.location.href="login.html"
+
+}
+
+document.getElementById("logoutLink").addEventListener("click",async(e)=>{
+
+e.preventDefault()
+
+await supabase.auth.signOut()
+
+window.location.href="login.html"
+
+})
+
+const clientSelect=document.getElementById("client")
+
+const list=document.getElementById("list")
+
+const msg=document.getElementById("msg")
+
+async function loadClients(){
+
+const {data,error}=await supabase
+.from("clients")
+.select("id,full_name")
+
+if(error)return
+
+clientSelect.innerHTML=data.map(c=>`
+
+<option value="${c.id}">${c.full_name}</option>
+
+`).join("")
+
+}
+
+async function loadCases(){
+
+const {data,error}=await supabase
+.from("cases")
+.select("id,rol,court,matter,fee_total,clients(full_name)")
+.order("created_at",{ascending:false})
+
+if(error){
+
+list.innerHTML="Error cargando causas"
+
+return
+
+}
+
+if(!data.length){
+
+list.innerHTML="<div class='muted'>Sin causas aún</div>"
+
+return
+
+}
+
+list.innerHTML=data.map(c=>`
+
+<div class="row">
+
+<div><b>${c.rol||"(sin rol)"}</b> — ${c.clients?.full_name||""}</div>
+
+<div class="muted">${c.court||""} • ${c.matter||""}</div>
+
+<div class="muted">Honorarios: $${c.fee_total||0}</div>
+
+</div>
+
+`).join("")
+
+}
+
+document.getElementById("btnCreate").addEventListener("click",async()=>{
+
+msg.textContent=""
+
+const payload={
+
+client_id:clientSelect.value,
+
+court:document.getElementById("court").value,
+
+rol:document.getElementById("rol").value,
+
+matter:document.getElementById("matter").value,
+
+assigned_lawyer:document.getElementById("lawyer").value,
+
+fee_total:Number(document.getElementById("fee_total").value)||0,
+
+fee_type:document.getElementById("fee_type").value,
+
+payment_mode:document.getElementById("payment_mode").value,
+
+ppm_percent:Number(document.getElementById("ppm_percent").value)||0,
+
+ppm_withheld_by:document.getElementById("ppm_withheld_by").value,
+
+notes:document.getElementById("notes").value
+
+}
+
+const {error}=await supabase.from("cases").insert(payload)
+
+if(error){
+
+msg.textContent="Error: "+error.message
+
+return
+
+}
+
+msg.textContent="Causa creada ✅"
+
+loadCases()
+
+})
+
+loadClients()
+
+loadCases()
+
+</script>
+
+</body>
+</html>
