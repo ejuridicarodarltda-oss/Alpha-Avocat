@@ -115,17 +115,24 @@ const payload = {
 
       if(!payload.full_name){ msg.textContent="Falta nombre."; return; }
 
-      const { error } = await supabase.from("clients").insert(payload);
-      if(error){ msg.textContent="Error: "+error.message; return; }
+     const { error } = await supabase.from("clients").insert(payload)
 
-      msg.textContent="Cliente guardado ✅";
-      document.getElementById("full_name").value="";
-      document.getElementById("rut").value="";
-      document.getElementById("address").value="";
-      document.getElementById("phone").value="";
-      document.getElementById("email").value="";
-      await loadList();
-    });
+if(error){
+  msg.textContent="Error: "+error.message
+  return
+}
+
+msg.textContent="Cliente guardado ✅"
+
+// limpiar formulario
+document.getElementById("full_name").value=""
+document.getElementById("rut").value=""
+document.getElementById("address").value=""
+document.getElementById("phone").value=""
+document.getElementById("email").value=""
+
+// volver a cargar lista
+await loadList()
 
     function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
 
