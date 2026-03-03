@@ -292,8 +292,7 @@ msg.textContent=""
 
 const payload={
 
-client_id:clientSelect.value,
-
+client_id: clientSelect.value ? clientSelect.value : null,
 court:document.getElementById("court").value,
 
 rol:document.getElementById("rol").value,
