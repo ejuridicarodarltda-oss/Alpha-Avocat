@@ -227,7 +227,7 @@ const msg=document.getElementById("msg")
 
 async function loadClients(){
   const { data, error } = await supabase
-    .from("clients")
+    .from("clients_v2")
     .select("id,full_name")
     .order("created_at", { ascending: false });
 
@@ -250,7 +250,7 @@ async function loadClients(){
 async function loadCases(){
   // 1) trae causas
   const { data: casesData, error: casesErr } = await supabase
-    .from("cases")
+    .from("cases_v2")
     .select("id,client_id,rol,court,matter,fee_total,created_at")
     .order("created_at", { ascending: false });
 
@@ -261,7 +261,7 @@ async function loadCases(){
 
   // 2) trae clientes para mapear nombres
   const { data: clientsData, error: clientsErr } = await supabase
-    .from("clients")
+    .from("clients_v2")
     .select("id,full_name");
 
   const nameById = new Map();
@@ -316,7 +316,7 @@ notes:document.getElementById("notes").value
 
 }
 
-const {error}=await supabase.from("cases").insert(payload)
+const {error}=await supabase.from("cases_v2").insert(payload)
 
 if(error){
 
