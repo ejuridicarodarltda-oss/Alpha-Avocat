@@ -85,7 +85,7 @@
 
     async function loadList(){
       const { data, error } = await supabase
-        .from("clients")
+        .from("clients_v2")
         .select("id,name,full_name,rut,is_legal_entity,phone,email")
         .order("created_at",{ascending:false})
         .limit(50);
@@ -115,7 +115,7 @@ const payload = {
 
       if(!payload.full_name){ msg.textContent="Falta nombre."; return; }
 
-     const { error } = await supabase.from("clients").insert(payload)
+     const { error } = await supabase.from("clients_v2").insert(payload)
 
 if(error){
   msg.textContent="Error: "+error.message
